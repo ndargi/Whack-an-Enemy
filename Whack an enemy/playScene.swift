@@ -1,3 +1,6 @@
+//Author1: Nicholas Dargi ndargi@bu.edu
+//Author2: Alex Bleda ableda@bu.edu
+//Author3: Sameer Qureshi sameerq@bu.edu
 //
 //  playScene.swift
 //  Whack an enemy
@@ -21,7 +24,10 @@ class playScene: SKScene {
     var nodesOver = [SKSpriteNode]()
     var labelsOver = [SKLabelNode]()
     
-    var score: Int = 0 {
+    var newGameButton = false
+    
+    var score: Int = 0
+        {
         didSet{
             gameScore.text = "Score \(score)"
         }
@@ -43,14 +49,6 @@ class playScene: SKScene {
         gameScore.horizontalAlignmentMode = .Left
         gameScore.fontSize = 48
         addChild(gameScore)
-        
-        newGameLabel = SKLabelNode(fontNamed: "Chalkduster")
-        newGameLabel.text = "NEW GAME"
-        newGameLabel.position = CGPoint(x: 950, y: 100)
-        newGameLabel.horizontalAlignmentMode = .Right
-        newGameLabel.fontSize = 48
-        newGameLabel.name = "restartGame"
-        addChild(newGameLabel)
         
         // Hole Locations
         
@@ -79,6 +77,7 @@ class playScene: SKScene {
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        
         /* Called when a touch begins */
         
         if let touch = touches.first {
@@ -110,26 +109,23 @@ class playScene: SKScene {
                     runAction(SKAction.playSoundFileNamed("whack.caf", waitForCompletion:false))
                 }
                 else if node.name == "restartGame" {
+                    newGameButton = true
                     newGame()
                 }
-                else if node.name == "mainMenu" {
-                    let nextScene = GameScene(size: self.size)
-                    nextScene.scaleMode = scaleMode
-                    let reveal = SKTransition.fadeWithDuration(1)
-                    self.view?.presentScene(nextScene, transition: reveal)
-                }
             }
-        }
         
+        }
+        NSUserDefaults.standardUserDefaults().setInteger(score, forKey: "score")
+
     }
-    
     override func update(currentTime: CFTimeInterval) {
         /* Called before each frame is rendered */
     }
     
     func createEnemy() {
         
-        if numRounds >= 100 {
+        if numRounds >= 25 {
+            newGameButton = false
             for slot in slots {
                 slot.hide()
             }
@@ -138,25 +134,33 @@ class playScene: SKScene {
             gameOver.zPosition = 1
             addChild(gameOver)
             nodesOver.append(gameOver)
-            let mainMenu = SKSpriteNode(imageNamed: "houseW")
-            mainMenu.position = CGPoint(x: 512, y: 384)
-            mainMenu.zPosition = 1
-            mainMenu.name = "mainMenu"
-            addChild(mainMenu)
-            nodesOver.append(mainMenu)
+            
+            newGameLabel = SKLabelNode(fontNamed: "Chalkduster")
+            newGameLabel.text = "NEW GAME"
+            newGameLabel.position = CGPoint(x: 950, y: 100)
+            newGameLabel.horizontalAlignmentMode = .Right
+            newGameLabel.fontSize = 48
+            newGameLabel.name = "restartGame"
+            addChild(newGameLabel)
+            
+            labelsOver.append(newGameLabel)
+            
+            RunAfterDelay(2) {
+                if(!self.newGameButton){
+                let nextScene = scoreScene(size: self.size)
+                nextScene.scaleMode = self.scaleMode
+                let reveal = SKTransition.fadeWithDuration(1)
+                self.view?.presentScene(nextScene, transition: reveal)
+                }
+            }
+
             return
         }
         
-        popupTime *= 0.990
+        popupTime *= 0.995
         
         slots = GKRandomSource.sharedRandom().arrayByShufflingObjectsInArray(slots) as! [WhackSlot]
-        
-        /*
-        if RandomInt(min: 1, max: 30) > 2 {
-            slots[1].show(hideTime: popupTime / 4.0)
-            numRounds += 1
-        }
-        */
+
         slots[0].show(hideTime: popupTime / 4.0)
         numRounds += 1
         
@@ -166,11 +170,6 @@ class playScene: SKScene {
         RunAfterDelay(RandomDouble(min: minDelay, max: maxDelay)) { [unowned self] in
             self.createEnemy()
         }
-        /*
-        RunAfterDelay(1) { [unowned self] in
-            self.createEnemy()
-        }
-        */
     }
     
     func readyLabels() {
@@ -186,7 +185,7 @@ class playScene: SKScene {
         RunAfterDelay(1) {
             self.removeChildrenInArray(self.labelsOver)
             let set = SKLabelNode(fontNamed: "MarkerFelt-Wide")
-            set.text = "Set!"
+            set.text = "Set..."
             set.fontColor = UIColor.whiteColor()
             set.fontSize = 150
             set.position = CGPoint(x: CGRectGetMidX(self.frame), y: CGRectGetMidY(self.frame))

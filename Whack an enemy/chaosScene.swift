@@ -1,4 +1,6 @@
-//
+//Author1: Nicholas Dargi ndargi@bu.edu
+//Author2: Alex Bleda ableda@bu.edu
+//Author3: Sameer Qureshi sameerq@bu.edu
 //  chaosScene.swift
 //  Whack an enemy
 //
@@ -20,17 +22,19 @@ class chaosScene: SKScene {
     var nodesOver = [SKSpriteNode]()
     var labelsOver = [SKLabelNode]()
     
+    var gameScoreButton = false
+    
     var score: Int = 0 {
         didSet{
             gameScore.text = "Score \(score)"
         }
     }
     
-    var popupTime = 0.9
+    var popupTime = 0.85
     
     override func didMoveToView(view: SKView) {
         /* Setup your scene here */
-        let background = SKSpriteNode(imageNamed: "grass2")
+        let background = SKSpriteNode(imageNamed: "greenBack2")
         background.position = CGPoint(x: 512, y: 384)
         background.blendMode = .Replace
         background.zPosition = -1
@@ -42,22 +46,7 @@ class chaosScene: SKScene {
         gameScore.horizontalAlignmentMode = .Left
         gameScore.fontSize = 48
         addChild(gameScore)
-        
-        newGameLabel = SKLabelNode(fontNamed: "Chalkduster")
-        newGameLabel.text = "NEW GAME"
-        newGameLabel.position = CGPoint(x: 950, y: 100)
-        newGameLabel.horizontalAlignmentMode = .Right
-        newGameLabel.fontSize = 48
-        newGameLabel.name = "restartGame"
-        addChild(newGameLabel)
-        
-        /* Original Locations for Ipad
-         for i in 0 ..< 5 { createSlotAt(CGPoint(x: 100 + (i * 170), y: 410)) }
-         for i in 0 ..< 4 { createSlotAt(CGPoint(x: 180 + (i * 170), y: 320)) }
-         for i in 0 ..< 5 { createSlotAt(CGPoint(x: 100 + (i * 170), y: 230)) }
-         for i in 0 ..< 4 { createSlotAt(CGPoint(x: 180 + (i * 170), y: 140)) }
-         */
-        
+
         for i in 0 ..< 6 { createSlotAt(CGPoint(x: 100 + (i * 170), y: 600)) }
         for i in 0 ..< 5 { createSlotAt(CGPoint(x: 180 + (i * 170), y: 520)) }
         for i in 0 ..< 6 { createSlotAt(CGPoint(x: 100 + (i * 170), y: 440)) }
@@ -70,7 +59,6 @@ class chaosScene: SKScene {
         RunAfterDelay(4) { [unowned self] in
             self.createEnemy()
         }
-        
     }
     
     func createSlotAt(pos: CGPoint) {
@@ -95,7 +83,6 @@ class chaosScene: SKScene {
                     
                     whackSlot.hit()
                     score -= 5
-                    
                     runAction(SKAction.playSoundFileNamed("whackBad.caf", waitForCompletion:false))
                 }
                 else if node.name == "charEnemy" {
@@ -108,23 +95,17 @@ class chaosScene: SKScene {
                     
                     whackSlot.hit()
                     score += 1
-                    
                     runAction(SKAction.playSoundFileNamed("whack.caf", waitForCompletion:false))
                 }
                     
                 else if node.name == "restartGame" {
+                    gameScoreButton = true
                     newGame()
                 }
                 
-                else if node.name == "mainMenu" {
-                    let nextScene = GameScene(size: self.size)
-                    nextScene.scaleMode = scaleMode
-                    let reveal = SKTransition.fadeWithDuration(1)
-                    self.view?.presentScene(nextScene, transition: reveal)
-                }
             }
         }
-        
+        NSUserDefaults.standardUserDefaults().setInteger(score, forKey: "chaosScore")
     }
     
     override func update(currentTime: CFTimeInterval) {
@@ -135,7 +116,8 @@ class chaosScene: SKScene {
         
         numRounds += 1
         
-        if numRounds >= 1000 {
+        if numRounds >= 30 {
+            gameScoreButton = false
             for slot in slots {
                 slot.hide()
             }
@@ -147,34 +129,47 @@ class chaosScene: SKScene {
             
             nodesOver.append(gameOver)
             
-            let mainMenu = SKSpriteNode(imageNamed: "houseW")
-            mainMenu.position = CGPoint(x: 512, y: 384)
-            mainMenu.zPosition = 1
-            mainMenu.name = "mainMenu"
-            addChild(mainMenu)
+            newGameLabel = SKLabelNode(fontNamed: "Chalkduster")
+            newGameLabel.text = "NEW GAME"
+            newGameLabel.position = CGPoint(x: 950, y: 100)
+            newGameLabel.horizontalAlignmentMode = .Right
+            newGameLabel.fontSize = 48
+            newGameLabel.name = "restartGame"
+            addChild(newGameLabel)
             
-            nodesOver.append(mainMenu)
+            labelsOver.append(newGameLabel)
+            
+            RunAfterDelay(2) {
+                if(!self.gameScoreButton){
+                let nextScene = scoreScene(size: self.size)
+                nextScene.scaleMode = self.scaleMode
+                let reveal = SKTransition.fadeWithDuration(1)
+                self.view?.presentScene(nextScene, transition: reveal)
+                 }
+            }
             
             return
         }
         
-        popupTime *= 0.999
+        popupTime *= 0.990
         
         slots = GKRandomSource.sharedRandom().arrayByShufflingObjectsInArray(slots) as! [WhackSlot]
         slots[0].show(hideTime: popupTime)
         
         if RandomInt(min: 0, max: 12) > 4 { slots[1].show(hideTime: popupTime) }
         if RandomInt(min: 0, max: 12) > 8 { slots[2].show(hideTime: popupTime) }
-        if RandomInt(min: 0, max: 12) > 10 { slots[3].show(hideTime: popupTime) }
-        if RandomInt(min: 0, max: 12) > 11 { slots[4].show(hideTime: popupTime) }
+        if RandomInt(min: 0, max: 12) > 12 { slots[3].show(hideTime: popupTime) }
+        if RandomInt(min: 0, max: 12) > 7 { slots[4].show(hideTime: popupTime) }
+        if RandomInt(min: 0, max: 12) > 5 { slots[5].show(hideTime: popupTime) }
+        if RandomInt(min: 0, max: 12) > 3 { slots[6].show(hideTime: popupTime) }
+        if RandomInt(min: 0, max: 12) > 6 { slots[7].show(hideTime: popupTime) }
+        if RandomInt(min: 0, max: 12) > 2 { slots[8].show(hideTime: popupTime) }
+        if RandomInt(min: 0, max: 12) > 3 { slots[9].show(hideTime: popupTime) }
         
-        let minDelay = popupTime / 1.0
-        let maxDelay = popupTime * 3
+        let minDelay = popupTime / 4.0
+        let maxDelay = popupTime * 2
         
         RunAfterDelay(RandomDouble(min: minDelay, max: maxDelay)) { [unowned self] in
-            self.createEnemy()
-        }
-        RunAfterDelay(1) { [unowned self] in
             self.createEnemy()
         }
     }
@@ -192,7 +187,7 @@ class chaosScene: SKScene {
         RunAfterDelay(1) {
             self.removeChildrenInArray(self.labelsOver)
             let set = SKLabelNode(fontNamed: "MarkerFelt-Wide")
-            set.text = "Set!"
+            set.text = "Set..."
             set.fontColor = UIColor.whiteColor()
             set.fontSize = 150
             set.position = CGPoint(x: CGRectGetMidX(self.frame), y: CGRectGetMidY(self.frame))
@@ -219,7 +214,7 @@ class chaosScene: SKScene {
     }
     
     func newGame() {
-        popupTime = 0.9
+        popupTime = 0.65
         numRounds = 0
         score = 0
         readyLabels()

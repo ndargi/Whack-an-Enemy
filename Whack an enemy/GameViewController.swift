@@ -1,4 +1,6 @@
-//
+//Author1: Nicholas Dargi ndargi@bu.edu
+//Author2: Alex Bleda ableda@bu.edu
+//Author3: Sameer Qureshi sameerq@bu.edu
 //  GameViewController.swift
 //  Whack an enemy
 //

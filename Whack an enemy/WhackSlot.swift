@@ -1,4 +1,6 @@
-//
+//Author1: Nicholas Dargi ndargi@bu.edu
+//Author2: Alex Bleda ableda@bu.edu
+//Author3: Sameer Qureshi sameerq@bu.edu
 //  WhackSlot.swift
 //  Whack an enemy
 //
@@ -12,6 +14,8 @@ import UIKit
 
 class WhackSlot: SKNode {
     
+    var defaults: NSUserDefaults = NSUserDefaults.standardUserDefaults()
+
     var charNode: SKSpriteNode!
     
     var visible = false
@@ -43,16 +47,41 @@ class WhackSlot: SKNode {
         charNode.xScale = 1
         charNode.yScale = 1
         
-        charNode.runAction(SKAction.moveByX(0, y: 80, duration: 0.05))
+        charNode.runAction(SKAction.moveByX(0, y: 90, duration: 0.05))
         visible = true
         isHit = false
         
         if RandomInt(min:0, max: 2) == 0 {
-            charNode.texture = SKTexture(imageNamed: "messi2")   // change image here too
-            charNode.name = "charFriend"
-        } else {
-            charNode.texture = SKTexture(imageNamed: "cristiano2")  // evil picture
-            charNode.name = "charEnemy"
+            if let imageDataAsDefaults:NSData = defaults.objectForKey("CameraRollPicture") as? NSData {
+                let someImage: UIImage = UIImage(data: imageDataAsDefaults)!
+                //check to see if there’s a placeholder namedCameraRollPlaceholder…
+                let finalImage = maskRoundedImage(someImage, radius: 600.0)
+                let tex: SKTexture = SKTexture(image:finalImage)
+                charNode.texture = tex
+                charNode.zRotation = CGFloat(3 * M_PI_2)
+                charNode.name = "charFriend"
+            }
+            else {
+                charNode.texture = SKTexture(imageNamed: "messi2")
+                charNode.name = "charFriend"
+            }
+            
+        }
+        
+        else {
+            if let imageDataAsDefaults:NSData = defaults.objectForKey("CameraRollPictureEnemy") as? NSData {
+                let someImage:UIImage = UIImage(data: imageDataAsDefaults)!
+                //check to see if there’s a placeholder namedCameraRollPlaceholder…
+                let finalImage = maskRoundedImage(someImage, radius: 600.0)
+                let tex2: SKTexture = SKTexture(image:finalImage)
+                charNode.texture = tex2  // evil picture
+                charNode.zRotation = CGFloat(3 * M_PI_2)
+                charNode.name = "charEnemy"
+            }
+            else {
+                charNode.texture = SKTexture(imageNamed: "cristiano2")
+                charNode.name = "charEnemy"
+            }
         }
         
         RunAfterDelay(hideTime * 3.0) { [unowned self] in  // time it stays up before hiding again
@@ -63,7 +92,7 @@ class WhackSlot: SKNode {
     func hide() {
         if !visible { return }
 
-        charNode.runAction(SKAction.moveByX(0, y: -80, duration: 0.05))
+        charNode.runAction(SKAction.moveByX(0, y: -95, duration: 0.05))
         visible = false
     }
     
@@ -75,10 +104,27 @@ class WhackSlot: SKNode {
         addChild(explosion!)
         
         let delay = SKAction.waitForDuration(0.25)
-        let hide = SKAction.moveByX(0, y: -80, duration: 0.5)
+        let hide = SKAction.moveByX(0, y: -90, duration: 0.5)
         let notVisible = SKAction.runBlock { [unowned self] in self.visible = false }
         charNode.runAction(SKAction.sequence([delay, hide, notVisible]))
         
     }
+    
+    func maskRoundedImage(image: UIImage, radius: Float) -> UIImage {
+        var imageView: UIImageView = UIImageView(image: image)
+        var layer: CALayer = CALayer()
+        layer = imageView.layer
+        
+        layer.masksToBounds = true
+        layer.cornerRadius = CGFloat(radius)
+        
+        UIGraphicsBeginImageContext(imageView.bounds.size)
+        layer.renderInContext(UIGraphicsGetCurrentContext()!)
+        var roundedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return roundedImage
+    }
+
 
 }

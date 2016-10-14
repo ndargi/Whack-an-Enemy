@@ -1,10 +1,11 @@
-//
+//Author1: Nicholas Dargi ndargi@bu.edu
+//Author2: Alex Bleda ableda@bu.edu
+//Author3: Sameer Qureshi sameerq@bu.edu
 //  Helper.swift
-//  Project11
 //
-//  Created by Hudzilla on 22/11/2014.
-//  Copyright (c) 2014 Hudzilla. All rights reserved.
 //
+//  Created by Alex Bleda on 24/04/16.
+//  Copyright © 2016 Alex Bleda. All rights reserved.//
 
 import Foundation
 import UIKit
